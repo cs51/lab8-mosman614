@@ -122,7 +122,10 @@ decide how to implement this.
 ......................................................................*)
                                                    
   let add_listener (evt : 'a event) (listener : 'a -> unit) : id =
-    failwith "WEvent.add_listener not implemented"
+    let new_ident = new_id () in 
+    match !evt with 
+    | [] -> evt := [{new_ident; listener}]
+    | h :: t -> evt := [h :: t] @ [{new_ident; listener}]
 
 (*......................................................................
 Exercise 2: Write remove_listener, which, given an id and an event,
@@ -130,16 +133,23 @@ unregisters the listener with that id from the event if there is
 one. If there is no listener with that id, do nothing.
 ......................................................................*)
             
-  let remove_listener (evt : 'a event) (i : id) : unit =
-    failwith "WEvent.remove_listener not implemented"
+  let rec remove_listener (evt : 'a event) (i : id) : unit =
+    evt := (List.filter (fun w -> w.id <> i) !evt)  
+    
 
 (*......................................................................
 Exercise 3: Write fire_event, which will execute all event handlers
 listening for the event.
 ......................................................................*)
             
-  let fire_event (evt : 'a event) (arg : 'a) : unit =
-    failwith "WEvent.fire_event not implemented"
+  let rec fire_event (evt : 'a event) (arg : 'a) : unit =
+    match !evt with 
+    | [] -> ()
+    | h :: t -> h.action a;
+                fire_event t a 
+
+
+    
 
 end
   
@@ -156,7 +166,7 @@ Exercise 4: Given your implementation of Event, create a new event
 called "newswire" that should pass strings to the event handlers.
 ......................................................................*)
   
-let newswire = fun _ -> failwith "newswire not implemented" ;;
+let newswire : string event = WEvent.new_event ();;
 
 (* News organizations might want to register event listeners to the
 newswire so that they might report on stories. Below are functions
@@ -207,7 +217,7 @@ Exercise 8: Create a new event called publish to signal that all
 stories should be published. The event should be a unit WEvent.event.
 ......................................................................*)
 
-let publish = fun _ -> failwith "publish not implemented" ;; 
+let publish = fun x ->  ;; 
 
 (*......................................................................
 Exercise 9: Write a function receive_report to handle new news
